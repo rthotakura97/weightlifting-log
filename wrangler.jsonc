@@ -9,7 +9,14 @@
 	"compatibility_date": "2025-03-03",
 	"observability": {
 		"enabled": true
-	}
+	},
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "weightlifting_log_db",
+      "database_id": "5ac5a02b-09ff-4ed6-b2d0-e9c710fc0ee8"
+    }
+  ]
   /**
    * Smart Placement
    * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
