@@ -4,6 +4,8 @@ export interface Env {
 
 export default {
     async fetch(request: Request, env: Env): Promise<Response> {
+        console.log(request);
+
         const url = new URL(request.url);
         const pathParts = url.pathname.split('/').filter(Boolean);
 
@@ -11,9 +13,70 @@ export default {
 
         switch (apiType) {
             case "exercise": {
-                return new Response(JSON.stringify(url.pathname), { status: 200 });
+                switch (request.method) {
+                    case "POST": {
+                        const json_body = await request.json();
+
+                        const stmt = await env.DB.prepare(
+                            "INSERT INTO ExerciseDb (WorkoutId, ExerciseName, Weight, Sets, Reps, Time) VALUES (?, ?, ?, ?, ?, ?)" // ✅ Now expects 6 values
+                        )
+                        .bind(
+                            json_body.WorkoutId ?? null,
+                            json_body.ExerciseName, 
+                            json_body.Weight,
+                            json_body.Sets,
+                            json_body.Reps ?? null,
+                            json_body.Time ?? null
+                        )
+                        .run();
+                              
+                        return new Response(JSON.stringify(stmt.meta.last_row_id), { status: 200 });
+                    }
+                    case "GET": {
+                        if (pathParts[1] == "history") {
+                            const exerciseName = pathParts[2];
+                            const stmt = await env.DB.prepare(
+                                "SELECT * FROM ExerciseDb WHERE ExerciseName = ?"
+                            )
+                            .bind(exerciseName)
+                            .all();
+
+                            return new Response(JSON.stringify(stmt.results), { status: 200 });
+                        } else {
+                            const entryId = pathParts[1];
+                            const stmt = await env.DB.prepare(
+                                "SELECT * FROM ExerciseDb WHERE EntryId = ?"
+                            )
+                            .bind(entryId)
+                            .all();
+
+                            return new Response(JSON.stringify(stmt.results), { status: 200 });
+                        }
+                    }
+                    case "PUT": {
+                        const entryId = pathParts[1];
+                        const json_body = await request.json();
+
+                        const stmt = await env.DB.prepare(
+                            "UPDATE ExerciseDb SET WorkoutId = ?, ExerciseName = ?, Weight = ?, Sets = ?, Reps = ?, Time = ? WHERE EntryId = ?"
+                        )
+                        .bind(
+                            json_body.WorkoutId ?? null,
+                            json_body.ExerciseName,
+                            json_body.Weight,
+                            json_body.Sets,
+                            json_body.Reps ?? null,
+                            json_body.Time ?? null,
+                            entryId
+                        )
+                        .run();
+
+                        return new Response(JSON.stringify(stmt.results), { status: 200 });
+                    }
+                }
             }
             case "workout": {
+                // TODO
                 return new Response(JSON.stringify(url.pathname), { status: 200 });
             }
         }
