@@ -1,3 +1,4 @@
+import { v4 as uuid } from 'uuid';
 export interface Env {
     DB: D1Database;
 }
@@ -76,8 +77,54 @@ export default {
                 }
             }
             case "workout": {
-                // TODO
-                return new Response(JSON.stringify(url.pathname), { status: 200 });
+                switch (request.method) {
+                    case "POST": {
+                        let uuidV4: string = uuid();
+
+                        const stmt = await env.DB.prepare(
+                            "INSERT INTO WorkoutDb (WorkoutId) VALUES (?)"
+                        )
+                        .bind(uuidV4)
+                        .run();
+
+                        return new Response(JSON.stringify(uuidV4), { status: 200 });
+                    }
+                    case "GET": {
+                        if (pathParts[1] == "history") {
+                            const stmt = await env.DB.prepare(
+                                "SELECT * FROM WorkoutDb"
+                            )
+                            .all();
+
+                            return new Response(JSON.stringify(stmt.results), { status: 200 });
+                        } else {
+                            const workoutId = pathParts[1];
+                            const stmt = await env.DB.prepare(
+                                "SELECT * FROM WorkoutDb WHERE WorkoutId = ?"
+                            )
+                            .bind(workoutId)
+                            .all();
+
+                            return new Response(JSON.stringify(stmt.results), { status: 200 });
+                        }
+                    }
+                    case "PUT": {
+                        const workoutId = pathParts[1];
+                        const json_body = await request.json();
+
+                        const stmt = await env.DB.prepare(
+                            "UPDATE WorkoutDb SET WorkoutId = ?, Timestamp = ? WHERE WorkoutId = ?"
+                        )
+                        .bind(
+                            json_body.WorkoutId,
+                            json_body.Timestamp,
+                            workoutId
+                        )
+                        .run();
+
+                        return new Response(JSON.stringify(stmt.results), { status: 200 });
+                    }
+                }                
             }
         }
 
