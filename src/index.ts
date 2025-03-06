@@ -10,6 +10,11 @@ export default {
         const url = new URL(request.url);
         const pathParts = url.pathname.split('/').filter(Boolean);
 
+        // Handle Preflight CORS Request (OPTIONS method)
+        if (request.method === "OPTIONS") {
+            return handleCors();
+        }
+
         const apiType = pathParts[0];
 
         switch (apiType) {
@@ -31,7 +36,7 @@ export default {
                         )
                         .run();
                               
-                        return new Response(JSON.stringify(stmt.meta.last_row_id), { status: 200 });
+                        return new Response(JSON.stringify(stmt.meta.last_row_id), { status: 200, headers: getCorsHeaders() });
                     }
                     case "GET": {
                         if (pathParts[1] == "history") {
@@ -42,7 +47,7 @@ export default {
                             .bind(exerciseName)
                             .all();
 
-                            return new Response(JSON.stringify(stmt.results), { status: 200 });
+                            return new Response(JSON.stringify(stmt.results), { status: 200, headers: getCorsHeaders() });
                         } else {
                             const entryId = pathParts[1];
                             const stmt = await env.DB.prepare(
@@ -51,7 +56,7 @@ export default {
                             .bind(entryId)
                             .all();
 
-                            return new Response(JSON.stringify(stmt.results), { status: 200 });
+                            return new Response(JSON.stringify(stmt.results), { status: 200, headers: getCorsHeaders() });
                         }
                     }
                     case "PUT": {
@@ -72,7 +77,7 @@ export default {
                         )
                         .run();
 
-                        return new Response(JSON.stringify(stmt.results), { status: 200 });
+                        return new Response(JSON.stringify(stmt.results), { status: 200, headers: getCorsHeaders() });
                     }
                 }
             }
@@ -87,7 +92,7 @@ export default {
                         .bind(uuidV4)
                         .run();
 
-                        return new Response(JSON.stringify(uuidV4), { status: 200 });
+                        return new Response(JSON.stringify(uuidV4), { status: 200, headers: getCorsHeaders() });
                     }
                     case "GET": {
                         if (pathParts[1] == "history") {
@@ -96,7 +101,7 @@ export default {
                             )
                             .all();
 
-                            return new Response(JSON.stringify(stmt.results), { status: 200 });
+                            return new Response(JSON.stringify(stmt.results), { status: 200, headers: getCorsHeaders() });
                         } else {
                             const workoutId = pathParts[1];
                             const stmt = await env.DB.prepare(
@@ -105,7 +110,7 @@ export default {
                             .bind(workoutId)
                             .all();
 
-                            return new Response(JSON.stringify(stmt.results), { status: 200 });
+                            return new Response(JSON.stringify(stmt.results), { status: 200, headers: getCorsHeaders() });
                         }
                     }
                     case "PUT": {
@@ -122,12 +127,29 @@ export default {
                         )
                         .run();
 
-                        return new Response(JSON.stringify(stmt.results), { status: 200 });
+                        return new Response(JSON.stringify(stmt.results), { status: 200, headers: getCorsHeaders() });
                     }
                 }                
             }
         }
 
-        return new Response(JSON.stringify({ error: "Not Found" }), { status: 404 });
+        return new Response(JSON.stringify({ error: "Not Found" }), { status: 404, headers: getCorsHeaders() });
     },
 };
+
+function handleCors() {
+    return new Response(null, {
+        headers: {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type"
+        }
+    });
+}
+
+function getCorsHeaders() {
+    return {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*"
+    };
+}
