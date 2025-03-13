@@ -1,4 +1,19 @@
 import { v4 as uuid } from 'uuid';
+
+interface ExerciseRequest {
+    WorkoutID?: string;
+    ExerciseName: string;
+    Weight: number;
+    Sets: number;
+    Reps?: number;
+    Time?: number;
+}
+
+interface WorkoutRequest {
+    WorkoutID: string;
+    Timestamp: string;
+}
+
 export interface Env {
     DB: D1Database;
 }
@@ -21,13 +36,13 @@ export default {
             case "exercise": {
                 switch (request.method) {
                     case "POST": {
-                        const json_body = await request.json();
+                        const json_body = await request.json() as ExerciseRequest;
 
                         const stmt = await env.DB.prepare(
-                            "INSERT INTO ExerciseDb (WorkoutId, ExerciseName, Weight, Sets, Reps, Time) VALUES (?, ?, ?, ?, ?, ?)" 
+                            "INSERT INTO ExerciseDB (WorkoutID, ExerciseName, Weight, Sets, Reps, Time) VALUES (?, ?, ?, ?, ?, ?)" 
                         )
                         .bind(
-                            json_body.WorkoutId ?? null,
+                            json_body.WorkoutID ?? null,
                             json_body.ExerciseName, 
                             json_body.Weight,
                             json_body.Sets,
@@ -42,16 +57,28 @@ export default {
                         if (pathParts[1] == "history") {
                             const exerciseName = pathParts[2];
                             const stmt = await env.DB.prepare(
-                                "SELECT * FROM ExerciseDb WHERE ExerciseName = ?"
+                                "SELECT * FROM ExerciseDB WHERE ExerciseName = ?"
                             )
                             .bind(exerciseName)
                             .all();
 
                             return responseWithHeaders(JSON.stringify(stmt.results), 200);
+                        } else if (pathParts[1] == "workout") {
+                            const workoutId = pathParts[2];
+                            console.log('Fetching exercises for workout ID:', workoutId);
+                            const stmt = await env.DB.prepare(
+                                "SELECT * FROM ExerciseDB WHERE WorkoutID = ?"
+                            )
+                            .bind(workoutId)
+                            .all();
+
+                            const results = stmt.results;
+                            console.log('Found exercises:', results);
+                            return responseWithHeaders(JSON.stringify(results), 200);
                         } else {
                             const entryId = pathParts[1];
                             const stmt = await env.DB.prepare(
-                                "SELECT * FROM ExerciseDb WHERE EntryId = ?"
+                                "SELECT * FROM ExerciseDB WHERE EntryId = ?"
                             )
                             .bind(entryId)
                             .all();
@@ -61,13 +88,13 @@ export default {
                     }
                     case "PUT": {
                         const entryId = pathParts[1];
-                        const json_body = await request.json();
+                        const json_body = await request.json() as ExerciseRequest;
 
                         const stmt = await env.DB.prepare(
-                            "UPDATE ExerciseDb SET WorkoutId = ?, ExerciseName = ?, Weight = ?, Sets = ?, Reps = ?, Time = ? WHERE EntryId = ?"
+                            "UPDATE ExerciseDB SET WorkoutID = ?, ExerciseName = ?, Weight = ?, Sets = ?, Reps = ?, Time = ? WHERE EntryId = ?"
                         )
                         .bind(
-                            json_body.WorkoutId ?? null,
+                            json_body.WorkoutID ?? null,
                             json_body.ExerciseName,
                             json_body.Weight,
                             json_body.Sets,
@@ -87,7 +114,7 @@ export default {
                         let uuidV4: string = uuid();
 
                         const stmt = await env.DB.prepare(
-                            "INSERT INTO WorkoutDb (WorkoutId) VALUES (?)"
+                            "INSERT INTO WorkoutDB (WorkoutID) VALUES (?)"
                         )
                         .bind(uuidV4)
                         .run();
@@ -97,15 +124,16 @@ export default {
                     case "GET": {
                         if (pathParts[1] == "history") {
                             const stmt = await env.DB.prepare(
-                                "SELECT * FROM WorkoutDb"
+                                "SELECT * FROM WorkoutDB"
                             )
                             .all();
 
+                            console.log('Workout history results:', stmt.results);
                             return responseWithHeaders(JSON.stringify(stmt.results), 200);
                         } else {
                             const workoutId = pathParts[1];
                             const stmt = await env.DB.prepare(
-                                "SELECT * FROM WorkoutDb WHERE WorkoutId = ?"
+                                "SELECT * FROM WorkoutDB WHERE WorkoutID = ?"
                             )
                             .bind(workoutId)
                             .all();
@@ -115,13 +143,13 @@ export default {
                     }
                     case "PUT": {
                         const workoutId = pathParts[1];
-                        const json_body = await request.json();
+                        const json_body = await request.json() as WorkoutRequest;
 
                         const stmt = await env.DB.prepare(
-                            "UPDATE WorkoutDb SET WorkoutId = ?, Timestamp = ? WHERE WorkoutId = ?"
+                            "UPDATE WorkoutDB SET WorkoutID = ?, Timestamp = ? WHERE WorkoutID = ?"
                         )
                         .bind(
-                            json_body.WorkoutId,
+                            json_body.WorkoutID,
                             json_body.Timestamp,
                             workoutId
                         )

@@ -170,3 +170,8 @@ dist
 
 .dev.vars
 .wrangler/
+
+# Pages-specific entries
+
+dist/
+.DS_Store

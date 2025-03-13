@@ -3,6 +3,8 @@
 	"version": "0.0.0",
 	"private": true,
 	"scripts": {
+		"pages:deploy": "wrangler pages deploy .",
+		"pages:dev": "wrangler pages dev .",
 		"deploy": "wrangler deploy",
 		"dev": "wrangler dev",
 		"start": "wrangler dev",

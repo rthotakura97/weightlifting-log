@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weightlifting Log</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Weightlifting Log</h1>
+        
+        <!-- Workout Section -->
+        <div class="section">
+            <h2>Current Workout</h2>
+            <div id="current-workout">
+                <button id="start-workout" class="primary-button">Start New Workout</button>
+                <div id="workout-exercises" class="hidden">
+                    <h3>Exercises</h3>
+                    <div id="exercise-list"></div>
+                    <button id="add-exercise" class="secondary-button">Add Exercise</button>
+                    <button id="finish-workout" class="primary-button">Finish Workout</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Exercise Form -->
+        <div id="exercise-form" class="modal hidden">
+            <div class="modal-content">
+                <h3>Add Exercise</h3>
+                <form id="exercise-entry">
+                    <div class="form-group">
+                        <label for="exercise-name">Exercise:</label>
+                        <input type="text" id="exercise-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="weight">Weight (lbs):</label>
+                        <input type="number" id="weight" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="sets">Sets:</label>
+                        <input type="number" id="sets" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reps">Reps:</label>
+                        <input type="number" id="reps">
+                    </div>
+                    <div class="form-group">
+                        <label for="time">Time (seconds):</label>
+                        <input type="number" id="time">
+                    </div>
+                    <div class="button-group">
+                        <button type="submit" class="primary-button">Save</button>
+                        <button type="button" class="secondary-button" id="cancel-exercise">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- History Section -->
+        <div class="section">
+            <h2>History</h2>
+            <div class="tabs">
+                <button class="tab-button active" data-tab="workouts">Workouts</button>
+                <button class="tab-button" data-tab="exercises">Exercises</button>
+            </div>
+            <div id="workouts-history" class="tab-content active">
+                <div id="workout-list"></div>
+            </div>
+            <div id="exercises-history" class="tab-content">
+                <div class="form-group">
+                    <label for="exercise-search">Search Exercise:</label>
+                    <input type="text" id="exercise-search">
+                </div>
+                <div id="exercise-history-list"></div>
+            </div>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html> 
